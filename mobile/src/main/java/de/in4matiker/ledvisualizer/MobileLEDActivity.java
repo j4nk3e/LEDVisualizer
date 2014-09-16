@@ -299,32 +299,37 @@ public class MobileLEDActivity extends Activity implements TextWatcher, SeekBar.
     }
 
     private void connect() {
-        try {
-            address = InetAddress.getByName(editText.getText().toString());
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    editText.setBackgroundColor(Color.DKGRAY);
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    address = InetAddress.getByName(editText.getText().toString());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            editText.setBackgroundColor(Color.DKGRAY);
+                        }
+                    });
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            editText.setBackgroundColor(Color.RED);
+                        }
+                    });
                 }
-            });
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    editText.setBackgroundColor(Color.BLACK);
+                if (address != null) {
+                    try {
+                        socket = new DatagramSocket();
+                    } catch (SocketException e) {
+                        e.printStackTrace();
+                    }
+                } else if (socket != null) {
+                    socket.close();
                 }
-            });
-        }
-        if (address != null) {
-            try {
-                socket = new DatagramSocket();
-            } catch (SocketException e) {
-                e.printStackTrace();
             }
-        } else if (socket != null) {
-            socket.close();
-        }
+        }.start();
     }
 
     @Override
