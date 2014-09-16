@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:gravity="center"
+              android:orientation="vertical">
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Smoothing"
+            android:id="@+id/textView4" android:layout_gravity="center_horizontal"/>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="40"
+                android:id="@+id/smooth_text" android:layout_gravity="center_vertical"
+                />
+        <SeekBar
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/smooth_bar" android:layout_gravity="center_horizontal" android:max="99"
+                android:progress="39"/>
+    </LinearLayout>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Low cutoff"
+            android:id="@+id/textView"/>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:id="@+id/lo_text" android:layout_gravity="center_vertical"
+                />
+        <SeekBar android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="20"
+                 android:progress="2" android:id="@+id/frequency_lo"/>
+    </LinearLayout>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Split"
+            android:id="@+id/textView2" android:layout_gravity="center_horizontal" android:singleLine="false"/>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:id="@+id/split_text" android:layout_gravity="center_vertical"
+                />
+        <SeekBar android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="40"
+                 android:progress="7" android:id="@+id/frequency_split"/>
+    </LinearLayout>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="High cutoff"
+            android:id="@+id/textView3" android:layout_gravity="center_horizontal"/>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:id="@+id/hi_text" android:layout_gravity="center_vertical"
+                />
+        <SeekBar android:layout_width="fill_parent" android:layout_height="wrap_content" android:max="500"
+                 android:progress="500" android:id="@+id/frequency_top"/>
+    </LinearLayout>
+    <TextView android:text="@string/address_title"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"/>
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/address"
+            android:text="@string/address"
+            android:id="@+id/address"/>
+    <ProgressBar
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:max="128"
+            android:progress="0"
+            android:editable="false" android:id="@+id/progress_hi"
+            style="@android:style/Widget.ProgressBar.Horizontal"/>
+    <ProgressBar
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:max="128"
+            android:progress="0" android:editable="false" android:id="@+id/progress_lo"
+            style="@android:style/Widget.ProgressBar.Horizontal"/>
+</LinearLayout>	

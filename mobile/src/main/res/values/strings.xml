@@ -1,0 +1,5 @@
+<resources>
+    <string name="address">192.168.232.115</string>
+    <string name="address_title">Controller Address:</string>
+    <string name="app_name">LEDVisualizer</string>
+</resources>
