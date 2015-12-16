@@ -67,6 +67,7 @@ public class MobileLEDActivity extends Activity implements TextWatcher, SeekBar.
     private GoogleApiClient googleApiClient;
     private Collection<String> nodes;
 
+
     /**
      * Called when the activity is first created.
      */
@@ -110,7 +111,7 @@ public class MobileLEDActivity extends Activity implements TextWatcher, SeekBar.
 
 
     private Collection<String> getNodes() {
-        HashSet<String> results = new HashSet<String>();
+        HashSet<String> results = new HashSet<>();
         NodeApi.GetConnectedNodesResult nodes =
                 Wearable.NodeApi.getConnectedNodes(googleApiClient).await();
         if (nodes != null && nodes.getNodes() != null) {
@@ -256,7 +257,7 @@ public class MobileLEDActivity extends Activity implements TextWatcher, SeekBar.
                     }
                     try {
                         Thread.sleep(5);
-                    } catch (InterruptedException e) {
+                    } catch (InterruptedException ignored) {
                     }
                 }
             }
@@ -343,7 +344,7 @@ public class MobileLEDActivity extends Activity implements TextWatcher, SeekBar.
                     try {
                         socket.send(new DatagramPacket(new byte[6], 6, address, 12345));
                         socket.close();
-                    } catch (IOException e) {
+                    } catch (IOException ignored) {
                     }
                 }
             }.start();
@@ -370,7 +371,7 @@ public class MobileLEDActivity extends Activity implements TextWatcher, SeekBar.
         data[start + 2] = (byte) (clamp(b, 0, 1) * max);
     }
 
-    private static final double clamp(double value, int min, int max) {
+    private static double clamp(double value, int min, int max) {
         if (value < min) {
             return min;
         } else if (value > max) {
@@ -404,7 +405,11 @@ public class MobileLEDActivity extends Activity implements TextWatcher, SeekBar.
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        smoothText.setText(String.valueOf(progress + 1));
+        if (seekBar.equals(smoothBar)) {
+            smoothText.setText(String.valueOf(progress + 1));
+        } else {
+            updateFrequency(seekBar, progress);
+        }
     }
 
     private void setSmoothing(int smoothing) {
