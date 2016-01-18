@@ -33,9 +33,14 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-public class MobileLEDActivity extends Activity implements TextWatcher, SeekBar.OnSeekBarChangeListener, DataApi.DataListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-    private static final String TAG = MobileLEDActivity.class.getSimpleName();
+import de.greenrobot.event.EventBus;
+
+public class VisualizerActivity extends Activity implements TextWatcher, SeekBar.OnSeekBarChangeListener, DataApi.DataListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+    private static final String TAG = VisualizerActivity.class.getSimpleName();
     private ProgressBar barHi;
     private ProgressBar barLo;
     private SeekBar frequencySplit;
@@ -74,6 +79,7 @@ public class MobileLEDActivity extends Activity implements TextWatcher, SeekBar.
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
         setContentView(R.layout.main);
         editText = (EditText) findViewById(R.id.address);
         lowCutText = (TextView) findViewById(R.id.lo_text);
@@ -183,85 +189,89 @@ public class MobileLEDActivity extends Activity implements TextWatcher, SeekBar.
         bufferPosition = 0;
     }
 
-    private void startPolling() {
-        new Thread() {
-            @Override
-            public void run() {
-                visualizer.setEnabled(true);
-                byte[] fft = new byte[4096];
-                while (visualizer.getEnabled()) {
-                    visualizer.getFft(fft);
+    ScheduledExecutorService visualizerExecutor;
 
-                    double lowMax = 0;
-                    double highMax = 0;
-                    for (int i = 2; i < fft.length - 2; i += 2) {
-                        double rfk = fft[i];
-                        double ifk = fft[i + 1];
-                        double magnitude = Math.sqrt(rfk * rfk + ifk * ifk);
-                        if (magnitude > 0) {
-                            if (i * 2 < splitIndex && i * 2 > lowCutoffIndex) {
-                                lowMax += Math.log10(magnitude);
-                            } else if (i * 2 < highCutoffIndex) {
-                                highMax += Math.log10(magnitude);
-                            }
+    private final Runnable poller = new Runnable() {
+        @Override
+        public void run() {
+            visualizer.setEnabled(true);
+            byte[] fft = new byte[4096];
+            while (visualizer.getEnabled()) {
+                visualizer.getFft(fft);
+
+                double lowMax = 0;
+                double highMax = 0;
+                for (int i = 2; i < fft.length - 2; i += 2) {
+                    double rfk = fft[i];
+                    double ifk = fft[i + 1];
+                    double magnitude = Math.sqrt(rfk * rfk + ifk * ifk);
+                    if (magnitude > 0) {
+                        if (i * 2 < splitIndex && i * 2 > lowCutoffIndex) {
+                            lowMax += Math.log10(magnitude);
+                        } else if (i * 2 < highCutoffIndex) {
+                            highMax += Math.log10(magnitude);
                         }
                     }
-                    lowBuffer[bufferPosition] = lowMax;
-                    highBuffer[bufferPosition] = highMax;
-                    bufferPosition = (bufferPosition + 1) % bufferLength;
-                    double lowAvg = avg(lowBuffer);
-                    double highAvg = avg(highBuffer);
-                    if (lowAvg < 0) {
-                        lowAvg = 0;
-                    }
-                    if (highAvg < 0) {
-                        highAvg = 0;
-                    }
-                    lowDivisor *= 0.9999;
-                    highDivisor *= 0.9999;
-                    if (lowAvg > lowDivisor) {
-                        lowDivisor = lowAvg;
-                    }
-                    if (highAvg > highDivisor) {
-                        highDivisor = highAvg;
-                    }
-                    lowAvg /= lowDivisor;
-                    highAvg /= highDivisor;
-                    setProgressBars(lowAvg, highAvg);
-                    if (socket != null) {
-                        if (lowAvg == 0 && highAvg == 0) {
-                            if (pulseinc) {
-                                pulse += 0.0001;
-                                if (pulse > 0.3) {
-                                    pulseinc = false;
-                                }
-                            } else {
-                                pulse -= 0.0001;
-                                if (pulse < 0) {
-                                    pulseinc = true;
-                                    pulse = 0;
-                                }
+                }
+                lowBuffer[bufferPosition] = lowMax;
+                highBuffer[bufferPosition] = highMax;
+                bufferPosition = (bufferPosition + 1) % bufferLength;
+                double lowAvg = avg(lowBuffer);
+                double highAvg = avg(highBuffer);
+                if (lowAvg < 0) {
+                    lowAvg = 0;
+                }
+                if (highAvg < 0) {
+                    highAvg = 0;
+                }
+                lowDivisor *= 0.9999;
+                highDivisor *= 0.9999;
+                if (lowAvg > lowDivisor) {
+                    lowDivisor = lowAvg;
+                }
+                if (highAvg > highDivisor) {
+                    highDivisor = highAvg;
+                }
+                lowAvg /= lowDivisor;
+                highAvg /= highDivisor;
+                setProgressBars(lowAvg, highAvg);
+                if (socket != null) {
+                    if (lowAvg == 0 && highAvg == 0) {
+                        if (pulseinc) {
+                            pulse += 0.0001;
+                            if (pulse > 0.3) {
+                                pulseinc = false;
                             }
-                            splitColor(pulse, packetData, 3);
-                            splitColor(pulse, packetData, 0);
                         } else {
-                            pulse = 0;
-                            splitColor(lowAvg, packetData, 3);
-                            splitColor(highAvg, packetData, 0);
+                            pulse -= 0.0001;
+                            if (pulse < 0) {
+                                pulseinc = true;
+                                pulse = 0;
+                            }
                         }
-                        try {
-                            socket.send(new DatagramPacket(packetData, 6, address, 12345));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        splitColor(pulse, packetData, 3);
+                        splitColor(pulse, packetData, 0);
+                    } else {
+                        pulse = 0;
+                        splitColor(lowAvg, packetData, 3);
+                        splitColor(highAvg, packetData, 0);
                     }
                     try {
-                        Thread.sleep(5);
-                    } catch (InterruptedException ignored) {
+                        socket.send(new DatagramPacket(packetData, 6, address, 12345));
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }
-        }.start();
+        }
+    };
+
+    private void startPolling() {
+        if (visualizerExecutor != null) {
+            visualizerExecutor.shutdown();
+        }
+        visualizerExecutor = Executors.newSingleThreadScheduledExecutor();
+        visualizerExecutor.scheduleAtFixedRate(poller, 0, 10, TimeUnit.MILLISECONDS);
     }
 
     private boolean pulseinc = true;
@@ -336,6 +346,9 @@ public class MobileLEDActivity extends Activity implements TextWatcher, SeekBar.
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        visualizerExecutor.shutdown();
+        visualizerExecutor = null;
+        EventBus.getDefault().unregister(this);
         visualizer.setEnabled(false);
         if (socket != null && address != null) {
             new Thread() {

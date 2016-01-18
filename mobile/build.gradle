@@ -1,20 +1,31 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "21.0.0"
+    compileSdkVersion 23
+    buildToolsVersion "21.1.2"
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
 
     defaultConfig {
         applicationId "de.in4matiker.ledvisualizer"
-        minSdkVersion 19
-        targetSdkVersion 22
+        minSdkVersion 20
+        targetSdkVersion 23
         versionCode 1
         versionName "1.0"
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
     wearApp project(':wear')
-    compile 'com.google.android.gms:play-services-wearable:+'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.google.android.gms:play-services-wearable:8.4.0'
+    compile 'de.greenrobot:eventbus:2.4.0'
+    compile 'com.jakewharton:butterknife:7.0.1'
+    compile 'org.jetbrains.anko:anko-sdk15:0.8' // sdk19, sdk21, sdk23 are also available
+    compile 'org.jetbrains.anko:anko-support-v4:0.8' // In case you need support-v4 bindings
+    compile 'org.jetbrains.anko:anko-appcompat-v7:0.8' // For appcompat-v7 bindings
+    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.0.0-beta-4584'
 }
