@@ -4,17 +4,18 @@ package de.in4matiker.ledvisualizer;
  * Created by zerghase on 16.12.15.
  */
 public class Channel {
-    private static final double max = 127;
-    private final int index;
-    private float r = 1;
-    private float g = 1;
-    private float b = 1;
+    private final String topic;
+    private float r;
+    private float g;
+    private float b;
+    private boolean unset;
 
-    public Channel(int index) {
-        this.index = index;
+    public Channel(String topic) {
+        this.topic = topic;
+        unset = true;
     }
 
-    private static double clamp(double value) {
+    private static float clamp(float value) {
         if (value < 0) {
             return 0;
         } else if (value > 1) {
@@ -25,14 +26,20 @@ public class Channel {
 
 
     public void setColor(float r, float g, float b) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
+        unset = false;
+        this.r = clamp(r);
+        this.g = clamp(g);
+        this.b = clamp(b);
     }
 
-    public void setBytes(byte[] data) {
-        data[index * 3] = (byte) (clamp(r) * max);
-        data[index * 3 + 1] = (byte) (clamp(g) * max);
-        data[index * 3 + 2] = (byte) (clamp(b) * max);
+    public String getData() {
+        if (unset) {
+            return "";
+        }
+        return r + "," + g + "," + b;
+    }
+
+    public String getTopic() {
+        return topic;
     }
 }

@@ -4,6 +4,16 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.SeekBar;
 
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
@@ -42,21 +52,68 @@ public class ControllerActivity extends AppCompatActivity implements SeekBar.OnS
         super.onCreate(savedInstanceState);
         setContentView(R.layout.controller);
         ButterKnife.bind(this);
-        barController = new Controller("192.168.178.21");
-        couchController = new Controller("192.168.178.58");
+        try {
+            MqttClientPersistence persistence = new MemoryPersistence();
+            MqttAsyncClient client = new MqttAsyncClient("tcp://raspberrybar", "android", persistence);
+            barController = new Controller("led/bar", client);
+            couchController = new Controller("led/couch", client);
+            client.setCallback(new MqttCallback() {
+                @Override
+                public void connectionLost(Throwable cause) {
+
+                }
+
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    Channel[] channels = new Channel[]{
+                            barController.getChannel(0),
+                            barController.getChannel(1),
+                            couchController.getChannel(0),
+                            couchController.getChannel(1)
+                    };
+                    int channelSlider = 0;
+                    for (Channel channel : channels) {
+                        if (channel.getTopic().equals(topic)) {
+                            String data = new String(message.getPayload());
+                            String[] values = data.split(",");
+                            float[] floats = new float[3];
+                            for (int i = 0; i < 3; i++) {
+                                floats[i] = Float.valueOf(values[i]);
+                                bars[channelSlider * 3 + i].setProgress((int) (bars[channelSlider * 3 + i].getMax() * floats[i]));
+                            }
+                        }
+                        channelSlider += 1;
+                    }
+                }
+
+                @Override
+                public void deliveryComplete(IMqttDeliveryToken token) {
+
+                }
+            });
+
+            client.connect("context", new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    barController.read();
+                    couchController.read();
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    finish();
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
+            finish();
+        }
         bars = new SeekBar[]{r1, g1, b1, r2, g2, b2, r3, g3, b3, r4, g4, b4};
         int i = 0;
         for (SeekBar bar : bars) {
             bar.setTag(i++);
             bar.setOnSeekBarChangeListener(this);
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        barController.close();
-        couchController.close();
     }
 
     @Override
@@ -73,9 +130,9 @@ public class ControllerActivity extends AppCompatActivity implements SeekBar.OnS
             index = 0;
         }
         controller.getChannel(index).setColor(
-                bars[offset + index * 3].getProgress() / 127f,
-                bars[offset + index * 3 + 1].getProgress() / 127f,
-                bars[offset + index * 3 + 2].getProgress() / 127f
+                bars[offset + index * 3].getProgress() / 255f,
+                bars[offset + index * 3 + 1].getProgress() / 255f,
+                bars[offset + index * 3 + 2].getProgress() / 255f
         );
         controller.update();
     }

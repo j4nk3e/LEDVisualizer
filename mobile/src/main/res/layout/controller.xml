@@ -11,24 +11,24 @@
         android:layout_height="35dp"
         android:background="#ff0000"
         android:longClickable="false"
-        android:max="127"
-        android:progress="127" />
+        android:max="255"
+        android:progress="255" />
 
     <SeekBar
         android:id="@+id/g1"
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:background="#00ff00"
-        android:max="127"
-        android:progress="127" />
+        android:max="255"
+        android:progress="255" />
 
     <SeekBar
         android:id="@+id/b1"
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:background="#0000ff"
-        android:max="127"
-        android:progress="127" />
+        android:max="255"
+        android:progress="255" />
 
     <Space
         android:layout_width="match_parent"
@@ -39,24 +39,24 @@
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:background="#ff0000"
-        android:max="127"
-        android:progress="127" />
+        android:max="255"
+        android:progress="255" />
 
     <SeekBar
         android:id="@+id/g2"
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:background="#00ff00"
-        android:max="127"
-        android:progress="127" />
+        android:max="255"
+        android:progress="255" />
 
     <SeekBar
         android:id="@+id/b2"
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:background="#0000ff"
-        android:max="127"
-        android:progress="127" />
+        android:max="255"
+        android:progress="255" />
 
     <Space
         android:layout_width="match_parent"
@@ -67,24 +67,24 @@
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:background="#ff0000"
-        android:max="127"
-        android:progress="127" />
+        android:max="255"
+        android:progress="255" />
 
     <SeekBar
         android:id="@+id/g3"
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:background="#00ff00"
-        android:max="127"
-        android:progress="127" />
+        android:max="255"
+        android:progress="255" />
 
     <SeekBar
         android:id="@+id/b3"
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:background="#0000ff"
-        android:max="127"
-        android:progress="127" />
+        android:max="255"
+        android:progress="255" />
 
     <Space
         android:layout_width="match_parent"
@@ -95,22 +95,22 @@
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:background="#ff0000"
-        android:max="127"
-        android:progress="127" />
+        android:max="255"
+        android:progress="255" />
 
     <SeekBar
         android:id="@+id/g4"
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:background="#00ff00"
-        android:max="127"
-        android:progress="127" />
+        android:max="255"
+        android:progress="255" />
 
     <SeekBar
         android:id="@+id/b4"
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:background="#0000ff"
-        android:max="127"
-        android:progress="127" />
+        android:max="255"
+        android:progress="255" />
 </LinearLayout>
