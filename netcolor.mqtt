@@ -1,0 +1,70 @@
+#!/usr/bin/python
+import color, time, random
+import SocketServer
+from threading import Thread
+import paho.mqtt.client as mqtt
+
+OFF = (0, 0, 0, 0, 0, 0)
+ON = (1, 1, 1, 1, 1, 1)
+
+color.write(*OFF)
+
+class Watchdog(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        self.current = OFF
+        self.target = ON
+        self.lastrecv = time.time()
+	self.disco = 0
+
+    def run(self):
+        while 1:
+            time.sleep(0.02)
+            if self.disco and self.target == self.current:
+                self.target = (random.random(), random.random(), random.random(), random.random(), random.random(), random.random())
+		print self.target
+            else:
+                self.current = tuple([c+self.clamp(t - c) for (t, c) in zip(self.target, self.current)])
+            color.write(*self.current)
+    
+    def clamp(self, diff):
+        if diff > 0.02:
+            diff = 0.02
+        elif diff < -0.02:
+            diff = -0.02
+        return diff
+
+watchdog = Watchdog()
+watchdog.start()
+
+TOPIC = "led/couch/#"
+
+def on_connect(client, userdata, flags, rc):
+	print "Connected with result code", rc
+	if rc != 0:
+		time.sleep(1)
+		client.reconnect()
+	client.subscribe(TOPIC)
+
+def on_message(client, userdata, msg):
+	print msg.topic, msg.payload
+	if msg.topic.endswith("disco"):
+		if msg.payload.startswith("1"):
+			watchdog.disco = 1
+		else:
+			watchdog.disco = 0
+		return
+	values = msg.payload.split(",")
+	floats = tuple(map(lambda x: float(x), values))
+	if msg.topic.endswith("1"):
+		watchdog.target = floats + watchdog.target[3:]
+	if msg.topic.endswith("2"):
+		watchdog.target = watchdog.target[0:3] + floats
+	print watchdog.target
+
+client = mqtt.Client()
+client.on_connect = on_connect
+client.on_message = on_message
+
+client.connect("raspberrybar", 1883, 60)
+client.loop_start()
